@@ -1,0 +1,2 @@
+killall swamp_playd
+killall swamp_gpsd

@@ -1,0 +1,128 @@
+#!/usr/bin/lua
+
+-- Swamp Bike Opera embedded system for Kaffe Matthews 
+-- Copyright (C) 2012 Wolfgang Hauptfleisch, Dave Griffiths
+--
+-- This program is free software: you can redistribute it and/or modify
+-- it under the terms of the GNU General Public License as published by
+-- the Free Software Foundation, either version 3 of the License, or
+-- (at your option) any later version.
+--
+-- This program is distributed in the hope that it will be useful,
+-- but WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-- GNU General Public License for more details.
+--
+-- You should have received a copy of the GNU General Public License
+-- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+local scriptpath=string.match(arg[0], '^.*/')
+
+package.path = package.path..";"..scriptpath.."/?.lua;"..scriptpath.."/../lib/?.lua"
+
+require 'engine'
+require 'gps'
+require 'posix'
+require 'poly'
+require 'map'
+require 'direction'
+require 'random'
+require 'audioc'
+require 'socket'
+require 'utils'
+
+dofile(scriptpath..'../config/swamp.conf')
+--dofile(scriptpath..'../config/random.conf')
+local logfile = CONFIG.logfile
+local gpsdev  = CONFIG.gps_device
+local mapfile = CONFIG.mapfile
+local module  = "swamp"
+
+utils.log(logfile, "------------- started swamp -----------------")
+
+function isfile(file)
+    local g=io.open(file, "r")
+    if g==nil then 
+        return false
+    end
+    return true
+end
+-- check that the map file exists
+local files = {gpsdev,mapfile}
+if isfile(mapfile)==false then
+    utils.log(logfile, module..": Error: "..mapfile.." does not exist")
+    utils.log(logfile, module..": Exiting") os.exit(1)
+end
+
+while isfile(gpsdev)==false do
+    utils.log(logfile, module..": No GPS device...") 
+    os.execute("sleep 5")
+end
+
+
+
+local themap=utils.load_json(mapfile)
+map.test_map(themap, logfile)
+
+-- start the player
+os.execute(scriptpath.."./swamp_playd &") 
+utils.log(logfile, "swamp_playd started")
+--utils.log(logfile, "waiting for playd")
+--posix.sleep(139)
+
+-- start the gps daemon
+os.execute(scriptpath.."./swamp_gpsd &")
+utils.log(logfile, "swamp_gpsd started")
+utils.log(logfile, "waiting for gpsd")
+posix.sleep(4)
+
+--- connect to the gps pipe
+local file = io.open("/tmp/swamp_gps","r")
+
+--------------------
+
+local state={}
+local events={}
+local pos_state={
+    time=os.time(),
+    dir={lat=0, lng=-1},
+    speed=0
+}
+
+local sample_state={}
+local sample_events={}
+
+utils.log(logfile, "starting loop")
+
+local t=0.5
+
+while true do
+    local line = file:read()
+    -- if we have a new gps fix
+
+    local period_seconds=60*10
+    t=math.sin((os.time()*180/period_seconds)*3.141/180)*0.5+0.5
+    --print("------------------ "..t)
+
+    if line then
+       local lat, lng = string.match(line, "^(.-)%s(.-)$")
+       -- if not garbage 
+       if tonumber(lat) and tonumber(lng) then
+          engine.gpslog(lat, lng)
+	  local pos={lat=lat,lng=lng}
+	  sample_state,sample_events=map.get_sample_events(pos,sample_state,themap,t)
+	  state,events=map.get_events(pos,state,themap,t)
+          pos_state=engine.update_pos_state(pos,pos_state)
+          engine.load_events(sample_events,pos_state)
+          engine.play_events(events,pos_state)
+	  --utils.table_print(sample_state)
+       end
+    end
+    posix.sleep(1)
+end
+
+
+
+
+
+

@@ -1,0 +1,32 @@
+#! /bin/sh
+
+#
+# Function that starts the daemon/service
+#
+do_start()
+{
+        cd  /home/dave/code/src/
+        /home/dave/code/src/swamp &> /home/dave/code/log/log.txt &
+}
+
+#
+# Function that stops the daemon/service
+#
+do_stop()
+{
+        killall swamp
+        killall swamp_gpsd
+        killall swamp_playd
+}
+
+case "$1" in
+  start)
+
+        do_start
+        ;;
+  stop)
+        do_stop
+        ;;
+esac
+
+:

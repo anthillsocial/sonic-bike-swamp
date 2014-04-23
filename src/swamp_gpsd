@@ -1,0 +1,39 @@
+#!/usr/bin/lua
+
+-- Swamp Bike Opera embedded system for Kaffe Matthews 
+-- Copyright (C) 2012 Wolfgang Hauptfleisch, Dave Griffiths
+--
+-- This program is free software: you can redistribute it and/or modify
+-- it under the terms of the GNU General Public License as published by
+-- the Free Software Foundation, either version 3 of the License, or
+-- (at your option) any later version.
+-- This program is distributed in the hope that it will be useful,
+-- but WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-- GNU General Public License for more details.
+-- You should have received a copy of the GNU General Public License
+-- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+local scriptpath=string.match(arg[0], '^.*/')
+
+package.path = package.path..";"..scriptpath.."/?.lua;"..scriptpath.."/../lib/?.lua"
+package.cpath = package.cpath..";"..scriptpath.."/?.so;"..scriptpath.."/../lib/?.so"
+
+require 'utils'
+require 'gps'
+
+-- get config settings
+dofile(scriptpath..'../config/swamp.conf')
+local logfile = CONFIG.logfile
+local gpsdev  = CONFIG.gps_device
+local gpsbaud = CONFIG.gps_baud
+local module='swamp_gpsd'
+
+-- set baud rate
+utils.log(logfile,module..": Setting baud rate to "..gpsbaud)
+os.execute('stty -F '..gpsdev..' '..gpsbaud)
+
+-- run gps code
+utils.log(logfile,module..": Using GPS device"..gpsdev)
+gps.startup(gpsdev, logfile)
+

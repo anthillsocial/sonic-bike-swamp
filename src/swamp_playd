@@ -1,0 +1,279 @@
+#!/usr/bin/lua
+
+-- Swamp Bike Opera embedded system for Kaffe Matthews 
+-- Copyright (C) 2012 Wolfgang Hauptfleisch, Dave Griffiths
+--
+-- This program is free software: you can redistribute it and/or modify
+-- it under the terms of the GNU General Public License as published by
+-- the Free Software Foundation, either version 3 of the License, or
+-- (at your option) any later version.
+-- This program is distributed in the hope that it will be useful,
+-- but WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-- GNU General Public License for more details.
+-- You should have received a copy of the GNU General Public License
+-- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+local scriptpath=string.match(arg[0], '^.*/')
+
+package.path = package.path..";"..scriptpath.."/?.lua;"..scriptpath.."/../lib/?.lua"
+package.cpath = package.cpath..";"..scriptpath.."/?.so;"..scriptpath.."/../lib/?.so"
+
+
+-- create an audio device using default parameters and exit in case of errors
+require("proAudioRt")
+require("posix")
+require("socket")
+
+print("starting player")
+posix.mkfifo("/tmp/dodo")
+
+dofile(scriptpath..'../config/swamp.conf')
+
+----------------------------------------------------------------------------
+
+function load_sample(sample,name)
+    print("loading "..name)
+    sample[name] = proAudio.sampleFromFile(CONFIG.sound_path..name..".wav")
+    print("loaded "..name)
+    return sample
+end
+
+function unload_sample(sample,name)
+    proAudio.sampleDestroy(sample[name])
+    sample[name] = nil
+    print("unloaded "..name)
+    return sample
+end
+
+function play_not_found()
+    local s=proAudio.sampleFromFile(CONFIG.sound_path.."startup.wav") 
+    proAudio.soundPlay(s)
+    socket.sleep(5)
+    proAudio.sampleDestroy(s)
+end
+
+function print_samples(sample)
+    print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+    for k,v in pairs(sample) do
+        print(k)
+    end
+    print("OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO")
+end
+
+function sound_check()
+    while true do
+        for file in posix.files(CONFIG.sound_path) do
+    	    local name=string.sub(file,0,string.len(file))
+    	    local sample = proAudio.sampleFromFile(CONFIG.sound_path..file)
+    	    print("loaded, playing "..CONFIG.sound_path..file)
+    	    if sample then 
+       	    local sound =  proAudio.soundPlay(sample)
+       	        socket.sleep(20)
+       		proAudio.soundStop(sound)
+       		proAudio.sampleDestroy(sample)
+    	    end
+	end
+    end
+end
+
+----------------------------------------------------------------------------
+
+if not proAudio.create(8,44000,1024) then -- 8, 44000, 1024 ) then 
+   print("couldn't create audio")
+   os.exit() 
+end
+
+
+-- play a test sound at startup
+print("loading test sound")
+local s=proAudio.sampleFromFile(CONFIG.sound_path.."startup.wav")
+print("playing test sound")
+proAudio.soundPlay(s)
+socket.sleep(5)
+print("destroying sample")
+proAudio.sampleDestroy(s)
+
+--- initialize the sample and sound table
+
+sample = {}
+sound = {}
+	    
+PITCH = { 
+  slow = 0.5 ,
+  normal = 1.0 , 
+  fast = 2.0 ,
+}
+
+local file = io.open("/tmp/dodo","r")
+
+while true do
+  socket.sleep(0.2)
+  local line = file:read()
+
+  if line then
+
+    local message , n = string.match(line, "^(.-)%s(.-)$")
+--    print("audio daemon received: "..message, n)
+--    local n = tonumber(n)
+
+  if n and message then
+
+    if message == "load" then
+       print("received load for:"..n)
+       if not sample[n] then 
+       	  sample=load_sample(sample,n) 
+       end
+
+    elseif message == "unload" then
+       if sample[n] then 
+       	  sample=unload_sample(sample,n) 
+       end
+
+    elseif message == "play" then
+         if not sound[n] then
+	    if sample[n] then 
+	        print("PLAYING "..n)
+	        sound[n] = proAudio.soundPlay(sample[n])
+	    else 
+	        print("!!!!!!!!!! sound "..n.." not loaded")
+                print_samples(sample)
+                play_not_found()
+	    end
+         else
+            print("sound "..n.." allready playing")
+         end
+
+    elseif message == "loop" then
+         if not sound[n] then
+	    if sample[n] then sound[n] = proAudio.soundLoop(sample[n])
+	    else 
+                print("!!!!!!!!!! sound "..n.." not loaded")
+                play_not_found()
+	    end
+         else
+            print("sound "..n.." allready playing")
+         end
+
+   elseif message == "play_right" then
+         if not sound[n] then
+	    if sample[n] then 
+                sound[n] = proAudio.soundPlay(sample[n])
+                proAudio.soundUpdate( sound[n], 0.0, 2.0, 0.0, 1.0 )
+	    else 
+                print("!!!!!!!!!! sound "..n.." not loaded")
+                play_not_found()
+	    end
+         else
+            print("sound "..n.." allready playing")
+         end
+
+   elseif message == "play_left" then
+         if not sound[n] then
+	    if sample[n] then 
+	        sound[n] = proAudio.soundLoop(sample[n])
+                proAudio.soundUpdate( sound[n], 2.0, 0.0, 0.0, 1.0 )
+	    else 
+                print("!!!!!!!!!! sound "..n.." not loaded")
+                play_not_found()
+	    end
+         else
+            print("sound "..n.." allready playing")
+         end
+
+   elseif message == "loop_right" then
+         if not sound[n] then
+	    if sample[n] then 
+                sound[n] = proAudio.soundLoop(sample[n],1,0)
+	    else 
+                print("!!!!!!!!!! sound "..n.." not loaded")
+                play_not_found()
+	    end
+         else
+            print("sound "..n.." allready playing")
+         end
+
+   elseif message == "loop_left" then
+         if not sound[n] then
+	    if sample[n] then 
+                sound[n] = proAudio.soundLoop(sample[n],0,1)
+	    else 
+                print("!!!!!!!!!! sound "..n.." not loaded")
+                play_not_found()
+	    end
+         else
+            print("sound "..n.." allready playing")
+         end
+
+    elseif message == "stop" then
+         if n == 100 then
+            for z = 1, 22 do
+               if sound[n] then
+                proAudio.soundStop(sound[n])
+                sound[n] = false
+               end
+            end
+         else
+             if sound[n] then
+                 proAudio.soundStop(sound[n])
+                 sound[n] = false
+             end
+         end
+
+    elseif message == "right" then
+          if sound[n] then
+             proAudio.soundUpdate( sound[n], 0.0, 2.0, 0.0, 1.0 )
+             --posix.sleep(1)
+          end
+
+    elseif message == "left" then
+         if sound[n] then
+             proAudio.soundUpdate( sound[n], 2.0, 0.0, 0.0, 1.0 )  
+             --posix.sleep(2)
+         end
+
+    elseif message == "slow" then
+         if sound[n] then
+             proAudio.soundUpdate( sound[n], 1.0, 1.0, 0.0, 0.5 )
+             --posix.sleep(1)
+         end
+
+    elseif message == "normal" then
+         if sound[n] then
+             proAudio.soundUpdate( sound[n], 1.0, 1.0, 0.0, 1.0 )
+             --posix.sleep(1)
+         end
+
+    elseif message == "fast" then
+         if sound[n] then
+             proAudio.soundUpdate( sound[n], 1.0, 1.0, 0.0, 2.0 )
+             --posix.sleep(1)
+         end
+
+
+    elseif message == "fadeout" then
+        if sound[n] then
+    	   print("fading...")
+             for i= 1 , 0 , -0.1 do
+                 proAudio.soundUpdate( sound[n], i, i, 0.0, 1.0  )
+                 socket.sleep(0.25)
+             end
+          proAudio.soundStop(sound[n])
+          sound[n] = false
+        end
+    else
+         print("invalid message")
+    end    
+
+   else 
+    print("invalid or missing parameter")
+   end
+
+  end
+
+
+
+end
+
+os.remove("/tmp/dodo")
+print("exit")

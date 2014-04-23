@@ -1,0 +1,14 @@
+
+file = io.open("/dev/input/event3", "r")
+
+while true do
+
+  content = file:read(4)
+    if content then
+       print("signal")
+       os.execute("reboot")
+       os.exit()
+    end
+  
+end
+
