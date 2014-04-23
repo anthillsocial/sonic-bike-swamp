@@ -1,8 +1,8 @@
 # When connected via USB run this script in order to
-# grab a shared internet connection (could automate)
+# grab a shared internet connection (could/should automate)
 /sbin/route add default gw 192.168.7.1
 echo "nameserver 8.8.8.8" >> /etc/resolv.conf
-# Create come environemtal variables to enable cross compiling using distcc
+# Create come enviromental variables to enable cross compiling using distcc
 export DISTCC_HOSTS=192.168.7.1/4
 export DISTCC_BACKOFF_PERIOD=0
 export DISTCC_IO_TIMEOUT=3000
