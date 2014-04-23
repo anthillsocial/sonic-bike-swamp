@@ -20,10 +20,11 @@ package.path = package.path..";"..scriptpath.."/?.lua;"..scriptpath.."/../lib/?.
 package.cpath = package.cpath..";"..scriptpath.."/?.so;"..scriptpath.."/../lib/?.so"
 
 require 'utils'
+require 'json'
 require 'gps'
 
 -- get config settings
-dofile(scriptpath..'../config/swamp.conf')
+CONFIG=utils.load_json("/home/sonic/sdcard/config.json") 
 local logfile = CONFIG.logfile
 local gpsdev  = CONFIG.gps_device
 local gpsbaud = CONFIG.gps_baud

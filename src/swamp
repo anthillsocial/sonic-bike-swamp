@@ -19,6 +19,9 @@
 local scriptpath=string.match(arg[0], '^.*/')
 
 package.path = package.path..";"..scriptpath.."/?.lua;"..scriptpath.."/../lib/?.lua"
+require 'utils'
+require 'json'
+CONFIG=utils.load_json("/home/sonic/sdcard/config.json")
 
 require 'engine'
 require 'gps'
@@ -29,10 +32,7 @@ require 'direction'
 require 'random'
 require 'audioc'
 require 'socket'
-require 'utils'
 
-dofile(scriptpath..'../config/swamp.conf')
---dofile(scriptpath..'../config/random.conf')
 local logfile = CONFIG.logfile
 local gpsdev  = CONFIG.gps_device
 local mapfile = CONFIG.mapfile

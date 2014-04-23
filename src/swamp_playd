@@ -24,17 +24,19 @@ package.cpath = package.cpath..";"..scriptpath.."/?.so;"..scriptpath.."/../lib/?
 require("proAudioRt")
 require("posix")
 require("socket")
+require 'json'
+require('utils')
 
 print("starting player")
 posix.mkfifo("/tmp/dodo")
 
-dofile(scriptpath..'../config/swamp.conf')
+CONFIG=utils.load_json("/home/sonic/sdcard/config.json")
 
 ----------------------------------------------------------------------------
 
 function load_sample(sample,name)
     print("loading "..name)
-    sample[name] = proAudio.sampleFromFile(CONFIG.sound_path..name..".wav")
+    sample[name] = proAudio.sampleFromFile(CONFIG.audio_path..name..".wav")
     print("loaded "..name)
     return sample
 end
@@ -47,7 +49,7 @@ function unload_sample(sample,name)
 end
 
 function play_not_found()
-    local s=proAudio.sampleFromFile(CONFIG.sound_path.."startup.wav") 
+    local s=proAudio.sampleFromFile("//home/sonic-bike-init/notfound.wav") 
     proAudio.soundPlay(s)
     socket.sleep(5)
     proAudio.sampleDestroy(s)
@@ -63,10 +65,10 @@ end
 
 function sound_check()
     while true do
-        for file in posix.files(CONFIG.sound_path) do
+        for file in posix.files(CONFIG.audio_path) do
     	    local name=string.sub(file,0,string.len(file))
-    	    local sample = proAudio.sampleFromFile(CONFIG.sound_path..file)
-    	    print("loaded, playing "..CONFIG.sound_path..file)
+    	    local sample = proAudio.sampleFromFile(CONFIG.audio_path..file)
+    	    print("loaded, playing "..CONFIG.audio_path..file)
     	    if sample then 
        	    local sound =  proAudio.soundPlay(sample)
        	        socket.sleep(20)
@@ -79,7 +81,7 @@ end
 
 ----------------------------------------------------------------------------
 
-if not proAudio.create(8,44000,1024) then -- 8, 44000, 1024 ) then 
+if not proAudio.create(8,48000,1024) then -- 8, 44000, 1024 ) then 
    print("couldn't create audio")
    os.exit() 
 end
@@ -87,7 +89,7 @@ end
 
 -- play a test sound at startup
 print("loading test sound")
-local s=proAudio.sampleFromFile(CONFIG.sound_path.."startup.wav")
+local s=proAudio.sampleFromFile("/home/sonic/sonic-bike-init/startup-swamp.wav")
 print("playing test sound")
 proAudio.soundPlay(s)
 socket.sleep(5)
