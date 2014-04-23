@@ -36,7 +36,15 @@ CONFIG=utils.load_json("/home/sonic/sdcard/config.json")
 
 function load_sample(sample,name)
     print("loading "..name)
-    sample[name] = proAudio.sampleFromFile(CONFIG.audio_path..name..".wav")
+    local dir = CONFIG.audio_path..name
+    local randomfile = grabrandomsample(dir)
+    local samplefilepath 
+    if randomfile ~= false then
+        samplefilepath = dir.."/"..randomfile
+    else
+        samplefilepath = CONFIG.audio_path..name..".wav"
+    end
+    sample[name] = proAudio.sampleFromFile(samplefilepath)
     print("loaded "..name)
     return sample
 end
@@ -49,7 +57,7 @@ function unload_sample(sample,name)
 end
 
 function play_not_found()
-    local s=proAudio.sampleFromFile("//home/sonic-bike-init/notfound.wav") 
+    local s=proAudio.sampleFromFile("/home/sonic/sonic-bike-init/notfound.wav") 
     proAudio.soundPlay(s)
     socket.sleep(5)
     proAudio.sampleDestroy(s)
@@ -80,8 +88,49 @@ function sound_check()
 end
 
 ----------------------------------------------------------------------------
+-- Grab a random filename from a directory
+-- Returns false if the directory doesn't exist
+function grabrandomsample(path)
+    local d = isdir(path)
+    --print('File:'..path..' IsFile:'..tostring(f)..' IsDir:'..tostring(d))
+    if d==true then 
+        -- grab a random sample from the directory
+        sample = scandirforrandom(path, '.wav')
+        return sample
+    else
+        return false
+    end 
+end
 
-if not proAudio.create(8,48000,1024) then -- 8, 44000, 1024 ) then 
+function isdir(fn)
+    local fstype = posix.stat(fn, "type")
+    if fstype == 'directory' then
+        return true
+    else 
+        return false
+    end 
+end
+
+function scandirforrandom(directory)
+    local i, t, popen = 0, {}, io.popen
+    for filename in popen('ls -a "'..directory..'"'):lines() do
+        firstchar = string.sub(filename,1,1)
+        if firstchar ~= '.' then
+            i = i + 1 
+            t[i] = filename
+        end 
+    end 
+    if i == 0 then
+        return false
+    end 
+    math.randomseed(os.time())
+    rand = math.random(i)
+    return t[rand]
+end
+
+
+----------------------------------------------------------------------------
+if not proAudio.create(8,CONFIG.audio_samplerate,1024) then -- 8, 44000, 1024 ) then 
    print("couldn't create audio")
    os.exit() 
 end
@@ -89,7 +138,7 @@ end
 
 -- play a test sound at startup
 print("loading test sound")
-local s=proAudio.sampleFromFile("/home/sonic/sonic-bike-init/startup-swamp.wav")
+local s=proAudio.sampleFromFile("/home/sonic/sonic-bike-init/startup-findingsong.wav")
 print("playing test sound")
 proAudio.soundPlay(s)
 socket.sleep(5)
