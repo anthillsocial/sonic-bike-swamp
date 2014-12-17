@@ -19,12 +19,11 @@ Add to the sudo goup: $ group usermod -a -G sudo sonic
 
 ## Setup the GPS dongle
 Plugin the GPS dongle and and see if the BBB can see it:
-	$ lsusb
+	- $ lsusb
 You should see an output that includes something like:
- Bus 001 Device 004: ID 067b:2303 Prolific Technology, Inc. PL2303 Serial Port
-Where Prolific Technology is the GPS device.
-Assuming it gets installed at /dev/ttyUSB0 you should see output from:
-$ stty -F /dev/ttyUSB0 ispeed 4800 && cat < /dev/ttyUSB0
+ 	- Bus 001 Device 004: ID 067b:2303 Prolific Technology, Inc. PL2303 Serial Port
+Where Prolific Technology is the GPS device.Assuming it gets installed at /dev/ttyUSB0 you should see output from:
+	- $ stty -F /dev/ttyUSB0 ispeed 4800 && cat < /dev/ttyUSB0
 
 #### Installing the audio Cape
 Instruction found at: <http://elinux.org/BBB_Audio_Cape_RevB_Getting_Started>
