@@ -2,8 +2,8 @@ SONIC BIKE SETUP
 ===================
 
 
-#### Setting up the beaglebone
-**The software is currently working within this environment:**
+##Setting up the beaglebone
+*The software is currently working within this environment:*
 The OS: $ lsb_release -a
 No LSB modules are available.
 Distributor ID:	Debian
@@ -12,13 +12,14 @@ Release:	7.4
 Codename:wheezy
 Linux version: $ uname -a
 Linux beaglebone 3.8.13-bone47 #1 SMP Fri Apr 11 01:36:09 UTC 2014 armv7l GNU/Linux
-**Setup a user called sonic**
+
+*Setup a user called sonic*
 Add user: $ adduser sonic
 Add to the sudo goup: $ group usermod -a -G sudo sonic
 
-#### Setup the GPS dongle
+## Setup the GPS dongle
 Plugin the GPS dongle and and see if the BBB can see it:
-$ lsusb
+	$ lsusb
 You should see an output that includes something like:
  Bus 001 Device 004: ID 067b:2303 Prolific Technology, Inc. PL2303 Serial Port
 Where Prolific Technology is the GPS device.
