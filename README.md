@@ -1,6 +1,6 @@
 SONIC BIKE SETUP
 ===================
-
+(need to sort out formating issues with the readme)
 
 ##Setting up the beaglebone
 *The software is currently working within this environment:*
