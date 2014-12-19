@@ -4,7 +4,8 @@ SONIC BIKE SETUP
 
 ##Setting up the beaglebone
 *The software is currently working within this environment:*
-The OS: $ lsb_release -a
+The OS: $ lsb_release -a 
+
 No LSB modules are available.
 Distributor ID:	Debian
 Description:	Debian GNU/Linux 7.4 (wheezy)
