@@ -3,7 +3,7 @@ SONIC BIKE SETUP
 A Bricrophonic Research Institute (BRI) Project: www.sonicbikes.net
 
 Find further information on building sonic bike here:
-http://wiki.sonicbikes.net/index.php?title=Hardware&action=edit
+http://wiki.sonicbikes.net/index.php?title=Hardware
 
 ##The Hardware
 - Beagle Bone Black.
