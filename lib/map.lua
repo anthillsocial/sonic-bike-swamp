@@ -203,8 +203,8 @@ end
 function test_map(map, logfile)
     for layer_index,layer in pairs(map) do
     	for zone_index,zone in pairs(layer.zones) do
-	    print("checking: "..zone.name)
-            local file=CONFIG.sound_path..zone.name..".wav";
+	    print("checking: "..zone.name) 
+            local file=CONFIG.audio_path..zone.name..".wav";
 	    -- utils.table_print(zone)
 
 	    if utils.find_value("Sample Parameters:Ghost",zone.categories) then

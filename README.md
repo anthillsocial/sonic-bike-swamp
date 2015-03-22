@@ -40,42 +40,6 @@ Assuming it gets installed at /dev/ttyUSB0 you should see output from:
 
     $ stty -F /dev/ttyUSB0 ispeed 4800 && cat < /dev/ttyUSB0
 
-## Installing the audio Cape
-These instructions can found at: <http://elinux.org/BBB_Audio_Cape_RevB_Getting_Started>
-its worth reading the sections on alsamixer controls.
-To install:
-
-    $ wget <http://elinux.org/images/1/10/BB-BONE-AUDI-02-00A0.zip>
-    $ unzip BB-BONE-AUDI-02-00A0.zip	
-    $ dtc -O dtb -o BB-BONE-AUDI-02-00A0.dtbo -b 0 -@ BB-BONE-AUDI-02-00A0.dts
-    $ mv BB-BONE-AUDI-02-00A0.dtbo /lib/firmware
-
-Add the following line to the end of the "/boot/uboot/uEnv.txt" file: 
-
-    optargs=capemgr.disable_partno=BB-BONELT-HDMI
-
-Reboot your BBB. Log in and check the cape manager:
-
-    $ reboot
-    $ cat /sys/devices/bone_capemgr*/slots
-
-Load the cape:
-
-    $ echo BB-BONE-AUDI-02 > /sys/devices/bone_capemgr*/slots
-
-To make the cape load every time add the following line to "/etc/default/capemgr":
-
-    CAPE=BB-BONE-AUDI-02
- 
-Then download some settings:
-
-    $ wget <https://raw.githubusercontent.com/CircuitCo/BeagleBone-Audio/files/asound.state>
-    $ mv asound.state /var/lib/alsa/asound.state 
-
-Finally plug headphones into the green connector and play a file:
-
-    $ aplay atestfile.wav
-
 ## Setup the code:
 First install all prerequisites:
 
@@ -102,7 +66,7 @@ Check sounds are playing:
 
 And add a .config file:
 
-    $ cp ../config/swamp_example.conf ../config/swamp.conf
+    $ /home/sonic/sdcard/config.json
 
 ## Installing proAudioRt (proteaAudioRt)
 The version available from <http://viremo.eludi.net/proteaAudio/proteaAud[[http://viremo.eludi.net/proteaAudio/proteaAudi|i]][[http://viremo.eludi.net/proteaAudio/proteaAudio|o]]> has a few mistakes so a corrected version needs to be downloaded:
