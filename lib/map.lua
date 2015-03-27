@@ -203,22 +203,7 @@ end
 function test_map(map, logfile)
     for layer_index,layer in pairs(map) do
     	for zone_index,zone in pairs(layer.zones) do
-<<<<<<< HEAD
 	        print("checking: "..zone.name) 
-            local file=CONFIG.audio_path..zone.name..".wav";
-	        -- utils.table_print(zone)
-
-	        if utils.find_value("Sample Parameters:Ghost",zone.categories) then
-	            print("is ghost")
-		        print(#zone.vertices[1])
-		        print(#zone.vertices[2])
-		        if #zone.vertices[1] ~= #zone.vertices[2] then
-		            print("ERROR WRONG VERTEX COUNT, TELL DAVE")
-		        end
-	        end
-	        if posix.stat(file) then
-=======
-	    print("checking: "..zone.name) 
             local file=CONFIG.audio_path..zone.name..".wav";
 	    -- utils.table_print(zone)
 
@@ -233,7 +218,6 @@ function test_map(map, logfile)
 	    end
 
 	    if posix.stat(file) then
->>>>>>> fc8e5d32fafcf02595e899dfde5db232985ce0f2
                 print("map check found: "..zone.name)
             else
                 if posix.stat(CONFIG.audio_path..zone.name, "type") ~= 'directory' then
