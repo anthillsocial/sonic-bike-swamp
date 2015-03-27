@@ -18,8 +18,7 @@ module("utils", package.seeall)
 
 -- Log to CONFIG.install_path/log/sonic.log
 function log(file, logmessage)
-   print(os.date().." "..logmessage)
-
+   print(os.date().." "..logmessage..' In:'..file)
    local  file = io.open(file, "a")
    local logmessage = os.date().." "..logmessage.."\n"
    file:write(logmessage)
