@@ -140,10 +140,16 @@ end
 print("loading test sound")
 local s=proAudio.sampleFromFile("/home/sonic/sonic-bike-init/startup-findingsong.wav")
 print("playing test sound")
-proAudio.soundPlay(s)
-socket.sleep(5)
+local b = proAudio.soundPlay(s, 1.0, 1.0, 0.0, 0.2)
+for i=0.3 , 1 , 0.1 do
+    proAudio.soundUpdate(b, 1.0, 1.0, 0.0, i  )
+    socket.sleep(0.25)
+end
+socket.sleep(1)
 print("destroying sample")
 proAudio.sampleDestroy(s)
+proAudio.sampleDestroy(b)
+
 
 --- initialize the sample and sound table
 
@@ -164,8 +170,8 @@ while true do
 
   if line then
 
-    local message , n = string.match(line, "^(.-)%s(.-)$")
---    print("audio daemon received: "..message, n)
+    local message , n, nn = string.match(line, "^(.-)%s(.-)$")
+    --print("audio daemon received: "..message, n)
 --    local n = tonumber(n)
 
   if n and message then
@@ -282,7 +288,15 @@ while true do
              proAudio.soundUpdate( sound[n], 2.0, 0.0, 0.0, 1.0 )  
              --posix.sleep(2)
          end
-
+    
+    elseif message == "pitch" then
+        local name,pitch = string.match(n, "^(.-)%s(.-)$")
+        print('AUdio daemon: '..name..': '..pitch)
+        if sound[name] then
+            print('CHANGE PITCH')
+            proAudio.soundUpdate(sound[name], 1.0, 1.0, 0.0, tonumber(pitch))
+        end
+        
     elseif message == "slow" then
          if sound[n] then
              proAudio.soundUpdate( sound[n], 1.0, 1.0, 0.0, 0.5 )
